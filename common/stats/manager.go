@@ -57,6 +57,8 @@ func (m *Manager) GetCounter(name string) stats.Counter {
 }
 
 // RegisterChannel registers or retrieves a channel by name.
+// Using a larger buffer size (128) to reduce the chance of dropped messages
+// under bursty traffic conditions on my home server setup.
 func (m *Manager) RegisterChannel(name string) (stats.Channel, error) {
 	m.access.Lock()
 	defer m.access.Unlock()
@@ -64,7 +66,7 @@ func (m *Manager) RegisterChannel(name string) (stats.Channel, error) {
 	if ch, found := m.channels[name]; found {
 		return ch, nil
 	}
-	ch := NewChannel(&ChannelConfig{BufferSize: 64, Blocking: false})
+	ch := NewChannel(&ChannelConfig{BufferSize: 128, Blocking: false})
 	m.channels[name] = ch
 	if m.running {
 		common.Must(ch.Start())
