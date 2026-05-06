@@ -18,13 +18,14 @@ func NewChannel() *Channel {
 }
 
 // Subscribe registers a new subscriber and returns a receive-only channel.
+// The buffer size of 16 helps avoid dropping messages under moderate load.
 func (c *Channel) Subscribe() (<-chan interface{}, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closed {
 		return nil, newError("channel is closed")
 	}
-	ch := make(chan interface{}, 4)
+	ch := make(chan interface{}, 16)
 	c.subscribers = append(c.subscribers, ch)
 	return ch, nil
 }
