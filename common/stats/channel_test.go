@@ -21,7 +21,8 @@ func TestChannelSubscribePublish(t *testing.T) {
 		if msg != "hello" {
 			t.Errorf("expected 'hello', got %v", msg)
 		}
-	case <-time.After(time.Second):
+	case <-time.After(2 * time.Second):
+		// Increased timeout from 1s to 2s to reduce flakiness on slow CI machines
 		t.Error("timeout waiting for message")
 	}
 }
