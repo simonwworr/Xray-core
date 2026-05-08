@@ -39,6 +39,7 @@ func TestSessionStatsClose(t *testing.T) {
 	}
 
 	// Calling Close again should not change the end time.
+	// This ensures Close() is idempotent and safe to call multiple times.
 	first := s.Duration()
 	time.Sleep(5 * time.Millisecond)
 	s.Close()
@@ -81,5 +82,17 @@ func TestSessionStatsStartTime(t *testing.T) {
 	st := s.StartTime()
 	if st.Before(before) || st.After(after) {
 		t.Errorf("start time %v not in expected range [%v, %v]", st, before, after)
+	}
+}
+
+// TestSessionStatsZeroValues verifies that a newly created session starts
+// with zero uplink and downlink counters, as expected.
+func TestSessionStatsZeroValues(t *testing.T) {
+	s := NewSessionStats()
+	if got := s.Uplink(); got != 0 {
+		t.Errorf("expected initial uplink 0, got %d", got)
+	}
+	if got := s.Downlink(); got != 0 {
+		t.Errorf("expected initial downlink 0, got %d", got)
 	}
 }
