@@ -43,6 +43,11 @@ func (s *SessionStats) Downlink() int64 {
 	return atomic.LoadInt64(&s.downlink)
 }
 
+// TotalTraffic returns the sum of uplink and downlink bytes.
+func (s *SessionStats) TotalTraffic() int64 {
+	return atomic.LoadInt64(&s.uplink) + atomic.LoadInt64(&s.downlink)
+}
+
 // Duration returns the session duration. If the session is still open,
 // it returns the elapsed time since start.
 func (s *SessionStats) Duration() time.Duration {
@@ -74,4 +79,11 @@ func (s *SessionStats) StartTime() time.Time {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.start
+}
+
+// EndTime returns the time the session ended, or zero if still open.
+func (s *SessionStats) EndTime() time.Time {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.end
 }
