@@ -49,7 +49,8 @@ func (s *SessionStats) TotalTraffic() int64 {
 }
 
 // Duration returns the session duration. If the session is still open,
-// it returns the elapsed time since start.
+// it returns the elapsed time since start. Note: for very short-lived sessions
+// this may return a near-zero duration, which is expected and not an error.
 func (s *SessionStats) Duration() time.Duration {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -86,4 +87,24 @@ func (s *SessionStats) EndTime() time.Time {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.end
+}
+
+// AverageUplinkRate returns the average uplink rate in bytes per second.
+// Returns 0 if the session duration is zero.
+func (s *SessionStats) AverageUplinkRate() float64 {
+	d := s.Duration().Seconds()
+	if d <= 0 {
+		return 0
+	}
+	return float64(atomic.LoadInt64(&s.uplink)) / d
+}
+
+// AverageDownlinkRate returns the average downlink rate in bytes per second.
+// Returns 0 if the session duration is zero.
+func (s *SessionStats) AverageDownlinkRate() float64 {
+	d := s.Duration().Seconds()
+	if d <= 0 {
+		return 0
+	}
+	return float64(atomic.LoadInt64(&s.downlink)) / d
 }
