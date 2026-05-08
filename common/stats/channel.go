@@ -46,6 +46,8 @@ func (c *Channel) Unsubscribe(sub <-chan interface{}) error {
 }
 
 // Publish sends a message to all subscribers.
+// Note: messages are dropped for a subscriber if its buffer is full (non-blocking send).
+// The context can be used to cancel broadcasting mid-way if the caller is done.
 func (c *Channel) Publish(ctx context.Context, msg interface{}) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -55,6 +57,7 @@ func (c *Channel) Publish(ctx context.Context, msg interface{}) {
 		case <-ctx.Done():
 			return
 		default:
+			// subscriber buffer full, drop message rather than block
 		}
 	}
 }
